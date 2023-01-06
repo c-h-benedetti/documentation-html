@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Count Nuclei</title>
+        <meta charset="utf-8"/>
+        <link rel="stylesheet" href="./index.css"/>
+        <link rel="stylesheet" href="../global.css">
+        <link rel="stylesheet" href="../generalPage.css">
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto">
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:bold">
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto+Mono">
+
+    </head>
+    <body>
+
+        <!-- - - - - - - - - - - CHAPTER 1 - - - - - - - - - - - - - - -->
+        
+        <h1><span>Detection &amp; counting of nuclei</span><br/><span>(NucleiTools)</span></h1>
+        <div class="chapter">
+            <h2 id="chap1">Description of the problem</h2>
+
+            <ul>
+                <li>The provided images have a single channel, a single slice and a unique frame.</li>
+                <li>They are encoded on 16 bits per channel.</li>
+                <li>The complexity to process them is due to the fact that many areas are out of focus, and there is some superposition.</li>
+                <li>Also, many debris of dead nuclei are present, and have to be ignored despite their size and intensity.</li>
+                <li>The nuclei just have to be detected and counted. A precise segmentation is not required.</li>
+                <li>The curing of results must be eased to save a maximum of time.</li>
+            </ul>
+
+            <h4>1. Links</h4>
+            <ul>
+                <li><a href="https://dev.mri.cnrs.fr/issues/1827"><span>Page on Redmine</span></a></li>
+                <li><a href="https://github.com/MontpellierRessourcesImagerie/imagej_macros_and_scripts/tree/master/clement/packages/nucleiTools"><span>GitHub repository</span></a></li>
+                <!-- <li><a href="./extern/index.html">Python documentation</a></li> -->
+            </ul>
+            
+            <h4>2. Implementation notes</h4>
+            <ul>
+                <li>Thanks to the quality of acquisition, almost no preprocessing is required.</li>
+                <li>Due to the size of each image and the amount of debris, the postprocessing phase is very long for the given task (particularly the filtering phase)...</li>
+                <li>LabKit was used for the segmentation, but some elements to ignore are almost as big and as bright as some elements to keep. Hence, the detection can't cover 100% of the present nuclei.</li>
+                <li>The appearance of false negative was prefered, over the creation of false positives.</li>
+                <li>The main loss occurs in area where the superpositition creates a diffuse background, and where out-of-focus objects are.</li>
+            </ul>
+
+            <h4>3. Required plugins</h4>
+            <ul>
+                <li><a href="https://imagej.net/plugins/labkit/"><span>LabKit</span></a></li>
+                <li><a href="https://imagej.net/plugins/morpholibj"><span>MorphoLibJ</span></a></li>
+                <li><a href="https://github.com/MontpellierRessourcesImagerie/imagej_macros_and_scripts/blob/master/clement/packages/mriGeneral/RandomLUT.py"><span>Random LUT</span></a></li>
+            </ul>
+        </div>
+
+        <!-- - - - - - - - - - - CHAPTER 2 - - - - - - - - - - - - - - -->
+
+        <div class="chapter">
+            <h2 id="chap2">Example of results</h2>
+
+            <p>
+                Click on any image to download the actual file.
+            </p>
+            
+            <div class="imgsRow">
+                <div class="imItem">
+                    <a class="imgEx" href="../../medias/solange_counting/example/55_w3DAPI.TIF"><img alt="" src="../../medias/solange_counting/example/original.png"/></a>
+                    <span class="legend">Original image</span>
+                </div>
+
+                <div class="imItem">
+                    <a class="imgEx" href="../../medias/solange_counting/example/55_w3dapi_map.tif"><img alt="" src="../../medias/solange_counting/example/detected.png"/></a>
+                    <span class="legend">Detection &amp; counting nuclei</span>
+                </div>
+
+                <div class="imItem">
+                    <a class="imgEx" href="../../medias/solange_counting/example/untitled.csv"><img alt="" src="../../medias/solange_counting/example/results.png"/></a>
+                    <span class="legend">CSV file for 2 images</span>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- - - - - - - - - - - CHAPTER 3 - - - - - - - - - - - - - - -->
+
+        <div class="chapter">
+            <h2>What's new</h2>
+
+            <h6>📌 06 Jan. 2023</h6>
+            <ul>
+                <li>An installer is now provided.</li>
+                <li>A complete documentation is available.</li>
+                <li>Some convenience features where brought (switch automatically to correct tool, auto fill of paths, ...)</li>
+            </ul>
+
+            <h6>📌 05 Jan. 2023</h6>
+            <ul>
+                <li><b>🎉 Initial release.</b></li>
+                <li>The script is able to roughly segment a batch of images placed in a folder.</li>
+                <li>From the labels, it processes the number of individuals in each image and creates a CSV.</li>
+                <li>A second tool helps the user to fix the result produced by the script.</li>
+            </ul>
+        </div>
+
+        <!-- - - - - - - - - - - CHAPTER 4 - - - - - - - - - - - - - - -->
+
+        <div class="chapter">
+            <h2>Walkthrough</h2>
+
+            <h4>1. Installation</h4>
+
+            <h6>LabKit &amp; MorphoLibJ</h6>
+
+            <p>
+                Before starting, make sure that you downloaded LabKit and MorphoLibJ for your Fiji. You can easily check that by going into the list of your update sites.<br/>
+                &nbsp;&nbsp;&nbsp;&nbsp; <b>Labkit:</b> &nbsp;&nbsp; <b>"Help"</b> (top right corner) ⤏ <b>"Update"</b> ⤏ <b>"Manage update sites"</b> ⤏ <b>"LabKit"</b><br/>
+                &nbsp;&nbsp;&nbsp;&nbsp; <b>MorphoLibJ:</b> &nbsp;&nbsp; <b>"Help"</b> (top right corner) ⤏ <b>"Update"</b> ⤏ <b>"Manage update sites"</b> ⤏ <b>"IJPB-plugins"</b><br/>
+            </p>
+
+            <div class="imgsRow">
+                <div class="imItem">
+                    <img alt="" src="../../medias/solange_counting/install/labkit_install.png"/>
+                    <span class="legend">Installing LabKit</span>
+                </div>
+
+                <div class="imItem">
+                    <img alt="" src="../../medias/solange_counting/install/morpholibj.png"/>
+                    <span class="legend">Installing LabKit</span>
+                </div>
+            </div>
+
+            <p>
+                Once you checked both boxes, you can close this window and click on "Apply Changes" (lower right) on the previously opened window.<br/>
+                If you just installed either of these plugins, you must restart your Fiji.
+            </p>
+
+            <h6>RandomLUT &amp; NucleiTools</h6>
+
+            <p>
+                To acquire both "RandomLUT" and "NucleiTools" scripts you can go on the <b><a href="https://github.com/MontpellierRessourcesImagerie/imagej_macros_and_scripts/tree/master/clement/macros/misc"><span>GitHub repository</span></a></b> and download "install-nucleitools.py".<br/>
+                Once you downloaded it, you should have a file precisely named "install-nucleitools.py". Open it like a regular image in Fiji and run it.<br/>
+                The output of the script should approximately look like the following image. The most important is the last line.
+            </p>
+
+            <div class="imgsRow">
+                <div class="imItem">
+                    <img alt="" src="../../medias/solange_counting/install/log_install.png"/>
+                    <span class="legend">Installing RandomLUT and NucleiTools</span>
+                </div>
+            </div>
+
+            <p>
+                This script automatically downloads the different files from the MRI repository and places them in the appropriate folders in your local Fiji.<br/>
+                Of the same way as when you installed LabKit, you should restart your Fiji now.
+            </p>
+
+            <div class="imgsRow">
+                <div class="imItem">
+                    <img alt="" src="../../medias/solange_counting/install/more_tools.png"/>
+                    <span class="legend">"More Tools" button</span>
+                </div>
+
+                <div class="imItem">
+                    <img alt="" src="../../medias/solange_counting/install/new_functions.png"/>
+                    <span class="legend">New functions</span>
+                </div>
+
+                <div class="imItem">
+                    <img alt="" src="../../medias/solange_counting/install/tool_icons.png"/>
+                    <span class="legend">Tools icons</span>
+                </div>
+            </div>
+
+            <p>
+                To verify that everything went well:
+            </p>
+            <ul>
+                <li>You can click on the "More Tools" button (circled in red on the previous set of pictures).</li>
+                <li>In the menu appearing, you should see "Count Nuclei" and "Random LUT" (in red boxes on the previous set of images).</li>
+                <li>By clicking of "Random LUT", the icon 5 should appear in your toolbar.</li>
+                <li>By clicking of "Nuclei Tools", the icons 1 to 4 should appear in your toolbar.</li>
+            </ul>
+
+            <p>
+                <b style="display:inline-block; margin-left: 50px; margin-top: 50px; margin-bottom: 10px;">Note:</b><br/>
+                We will not explicitely use "Random LUT" here, it is simply a dependence of "Nuclei Tools" to enable you to see better the result of the segmentation.<br/>
+                Originaly, segmented area start with an intensity of 1. Given the fact that black corresponds to an intensity of 0, segmented areas can be very tricky to see.<br/>
+                "Random LUT" simply assigns a random RGB color to each intensity, making all intensities easier to see.<br/>
+                On the following example, the same image is shown. The first with the actual intensities. Nuclei close to the top are very hard to see.<br/>
+                After the "Random LUT", even darkest colors are easier to see.
+            </p>
+
+            <div class="imgsRow">
+                <div class="imItem">
+                    <img alt="" src="../../medias/solange_counting/install/before-random.png"/>
+                    <span class="legend">Before Random LUT</span>
+                </div>
+
+                <div class="imItem">
+                    <img alt="" src="../../medias/solange_counting/install/after-random.png"/>
+                    <span class="legend">After Random LUT</span>
+                </div>
+
+            </div>
+
+            <h4>2. Before starting</h4>
+
+            <p>
+                Simply create a folder containing all the images you want to process.<br/>
+                This script is non-destructive (it creates its own working directory) so you don't have to copy your images if you need to process all your folder of original images.
+            </p>
+
+
+            <table>
+                <tr>
+                    <td class="iconColumn"><img class="icon" src="../../medias/solange_counting/run/icons/detect.png"/></td>
+                    <td class="iconName">Count Nuclei</td>
+                    <td class="iconDescr">
+                        <p>
+                            Displays the settings and launches the segmentation and the counting of nuclei on every image of the folder.<br/>
+                            The output of this function is a folder named "results" located in the folder containing your images.<br/>
+                            It contains a segmented version of your images and a CSV file representing what was found in each image.
+                        </p>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="iconColumn"><img class="icon" src="../../medias/solange_counting/run/icons/points.png"/></td>
+                    <td class="iconName">Make Points</td>
+                    <td class="iconDescr">
+                        <p>
+                            To use this function, you need to open one of the segmented images before (produced by the function of the previous button).<br/>
+                            It allows you to cure the segmentation by indicating manually through a multi-points selection, where are false positives and false negatives.<br/>
+                            <b>!!</b> Due to the behavior of ImageJ, all false positives must be cured before false negatives. Adding a new points makes the old ones impossible to remove.
+                        </p>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="iconColumn"><img class="icon" src="../../medias/solange_counting/run/icons/update.png"/></td>
+                    <td class="iconName">Update CSV</td>
+                    <td class="iconDescr">
+                        <p>
+                            Once you cured your segmentation with the previous function, clicking this button updates the produced CSV for this image.<br/>
+                        </p>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="iconColumn"><img class="icon" src="../../medias/solange_counting/run/icons/switch.png"/></td>
+                    <td class="iconName">Switch View</td>
+                    <td class="iconDescr">
+                        <p>
+                            On the segmented image, this button allows you to switch between composite and channel view.<br/>
+                            <ul>
+                                <li>In <b>composite</b> view, you will always see the original image with a superimposition of the segmented image.</li>
+                                <li>In <b>channel</b> view, only the active channel will be shown. (original = channel 2; segmented = channel 1)</li>
+                            </ul>
+                        </p>
+                    </td>
+                </tr>
+            </table>
+
+            <h4>3. Processing procedure</h4>
+
+            <p>
+                By clicking on the <span class="button"><img src="../../medias/solange_counting/run/icons/detect.png"/> Count Nuclei</span> button, the following window should show up.
+            </p>
+
+            <div class="imgsRow">
+                <div class="imItem">
+                    <img alt="" src="../../medias/solange_counting/run/windows/main-window.png"/>
+                    <span class="legend">Main settings window</span>
+                </div>
+            </div>
+
+            <table>
+                <tr>
+                    <td class="parameterName">Folder</td>
+                    <td>
+                        <p>
+                            Path to the folder in which you placed all your images to be processed.<br/>
+                            The "results" folder will be created inside this folder.
+                        </p>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td class="parameterName">Extension</td>
+                    <td>
+                        <p>
+                            The extension of the files to be processed.<br/>
+                            Don't forget the "." before.<br/>
+                            Not case sensitive.
+                        </p>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td class="parameterName">Classifier</td>
+                    <td>
+                        <p>
+                            Path to the file containing the classifier.<br/>
+                            The default path should work if you passed by the automatic installer to install this script.<br/>
+                            The classifier is necessary for LabKit and is independent to this project.<br/>
+                            It has the form of a regular file named "current.classifier".
+                        </p>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td class="parameterName">Min size</td>
+                    <td>
+                        <p>
+                            Minimal size of a detection.<br/>
+                            When LabKit segments an image, the output contains islands of pixels. Each island can be either correct or wrong.<br/>
+                            Also, some noise may appear, or some nuclei may be merged together.<br/>
+                            If the background is to bright, a chunk of background can even be detected as a nuclei.<br/>
+                            This value is the minimal size (in number of pixels) of an island for it to be considered a nuclei. Below this value, it is considered segmentation noise, and is discarded.<br/>
+                            The default value is suitable for this project.
+                        </p>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td class="parameterName">Max size</td>
+                    <td>
+                        <p>
+                            Maximal size of a detection.<br/>
+                            This value is the maximal size (in number of pixels) of an island for it to be considered a nuclei. Above this value, it is considered merged nuclei or background, and is discarded.<br/>
+                            The default value is suitable for this project.
+                        </p>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td class="parameterName">Output name</td>
+                    <td>
+                        <p>
+                            Name (not path) of the produced CSV file.<br/>
+                            The name doesn't really matter if the produced CSV will be used in an Excell document at last.
+                        </p>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td class="parameterName">Export maps</td>
+                    <td>
+                        <p>
+                            Determines if segmented images are exported or not.<br/>
+                            If unchecked, you won't have any way to cure the result of the segmentation since only a CSV and no image will be produced.
+                        </p>
+                    </td>
+                </tr>
+                
+            </table>
+
+            <p>
+                Once your settings look good, you can click the "OK" button.<br/>
+                This script is in the "offline" category, which means that you won't get a result instantly. You should launch the procedure at night, or while you are doing something else aside.<br/>
+                The log window should open and indicate you which image is being processed, as well as the progress of each step.<br/>
+                The execution is over only when the log window displays "DONE." or "<i>[Some error message]</i> Something went wrong abort."
+            </p>
+
+            <div class="imgsRow">
+                <div class="imItem">
+                    <img alt="" src="../../medias/solange_counting/run/windows/logs.png"/>
+                    <span class="legend">Logs window</span>
+                </div>
+            </div>
+
+            <p>
+                Some plugins (such as LabKit) only work in GUI mode. Hence, you will see some images flickering on your screen along the execution. This is normal, you must not close them manually.<br/>
+            </p>
+
+            <h4>4. Results</h4>
+
+            <p>
+                If the execution ended properly, a "results" folder should have appeared among your images.<br/>
+                It contains a set of images named like your original images (in lower case), and a CSV file.<br/>
+                The first line of the CSV contains the title of each column ("File" and "Count").<br/>
+                Then, each line contains a filename (matching your original file name) and the number of nuclei detected on this file.<br/>
+                If you plan to cure your results (see next chapter), do not move the CSV nor the images to another folder.
+            </p>
+        </div>
+
+        <div class="chapter">
+            <h2>Curing results</h2>
+
+            <p>
+                At this point, you have a folder containing a CSV and a set of images produced by the script.<br/>
+                Unfortunately, you opened a couple of images or compared with the figures you obtained by counting manually, and noticed that the output is missing some nuclei (or counted some extras).<br/>
+                For this situation, a set of curing tools are provided.
+            </p>
+
+            <h4>Standard workflow</h4>
+
+            <ul>
+                <li>Open Fiji and display the icons of the NucleiTools toolset (through the "More tools" menu).</li>
+                <li>Open one of the images produced by the script.</li>
+                <li>Click on the <span class="button"><img src="../../medias/solange_counting/run/icons/points.png"/> Make Points</span> button. A multi-points selection should have appeared.</li>
+                <li>To help you in the next operations, you can use the <span class="button"><img src="../../medias/solange_counting/run/icons/switch.png"/> Switch View</span> button. Depending on which channel you are on, it will display only a channel or a composite image.</li>
+                <li>You must start by removing the false positives, and then adding the false negative. ImageJ is made in such a way that adding a new point makes the old selection impossible to edit.</li>
+                <li>Once a point is present on each nuclei, you can click the <span class="button"><img src="../../medias/solange_counting/run/icons/update.png"/> Update CSV</span> button to automatically update the CSV file.</li>
+            </ul>
+        </div>
+
+    </body>
+</html>

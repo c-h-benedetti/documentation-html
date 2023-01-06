@@ -1,0 +1,224 @@
+
+/* = = = = = = = = = = = = ROOT OF THE PAGE = = = = = = = = = = = = = = = = */
+
+html, body {
+    background-color: var(--global-light);
+    margin: 0px;
+    padding: 0px;
+    width: 100%;
+    height: 100%;
+}
+
+/* = = = = = = = = = = = = SECTIONS TITLES = = = = = = = = = = = = = = = = */
+
+h1 {
+    text-align: center;
+    border-bottom: solid 40px var(--global-clr1);
+    margin: 0;
+    padding-top: 140px;
+    padding-bottom: 140px;
+    margin-bottom: 50px;
+    filter: drop-shadow(0 0.4rem 0.5rem rgba(0, 0, 0, 0.35));
+    background-repeat: no-repeat;
+    background-size: cover;
+}
+
+h1 > span {
+    display: inline-block;
+    font-weight: bolder;
+    font-size: 3em;
+    color: white;
+    padding-left: 70px;
+    padding-right: 70px;
+    padding-bottom: 15px;
+    border-bottom: solid 2px white;
+    text-shadow: -2px -2px 0 var(--global-dark), 2px -2px 0 var(--global-dark), -2px 2px 0 var(--global-dark), 2px 2px 0 var(--global-dark);
+}
+
+span ~ span {
+    margin-top: 35px;
+}
+
+
+h2 {
+    font-size: 2.8em;
+    padding: 10px;
+    padding-left: 50px;
+    padding-top: 10px;
+    background-color: var(--global-clr4);
+    color: white;
+    border-radius: 5px;
+    filter: drop-shadow(0 0.4rem 0.5rem rgba(0, 0, 0, 0.2));
+}
+
+h4 {
+    font-size: 2.3em;
+    padding: 5px;
+    padding-left: 40px;
+    color: var(--global-clr3);
+    margin-bottom: 30px;
+    border-bottom: solid 2px var(--global-clr2);
+}
+
+h6 {
+    font-size: 1.4em;
+    color: var(--global-clr5);
+    margin-top: 30px;
+    margin-bottom: 30px;
+    border-bottom: solid 2px var(--global-clr3);
+    display: inline-block;
+    padding-bottom: 5px;
+    padding-left: 10px;
+    padding-right: 15px;
+}
+
+/* = = = = = = = = = = = = CHAPTER BLOCK = = = = = = = = = = = = = = = = */
+
+.chapter {
+    background-color: white;
+    margin: 20px;
+    padding: 20px;
+    padding-top: 5px;
+    border-radius: 5px;
+    filter: drop-shadow(0 0.4rem 0.5rem rgba(0, 0, 0, 0.2));
+    margin-bottom: 50px;
+    color: var(--global-clr4);
+}
+
+/* = = = = = = = = = = = = IMAGES BLOCK = = = = = = = = = = = = = = = = */
+
+.imgsRow {
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: space-evenly;
+    align-items: flex-end;
+    align-content: stretch;
+    margin: 30px;
+}
+
+.imItem {
+    display: inline-block;
+}
+
+.imgEx {
+    display: block;
+    margin-bottom: 10px;
+}
+
+.legend {
+    display: block;
+    text-align: center;
+    color: #5a5a5a;
+    font-style: italic;
+
+}
+
+.centerImage {
+    display: block;
+    text-align: center;
+}
+
+.centerImage > img {
+    max-width: 90%;
+    height: auto;
+}
+
+/* = = = = = = = = = = = = MISCELANEOUS ELEMENTS = = = = = = = = = = = = = = = = */
+
+/* --> Links: */
+a, a:visited {
+    color: inherit;
+    text-decoration: none;
+    transition-duration: 0.4s;
+    border-bottom: solid 4px rgba(120, 195, 236, 0);
+}
+
+a:hover {
+    border-bottom: solid 4px var(--global-clr4);
+    transition-duration: 0.4s;
+}
+
+/* --> Fiji button: */
+.button {
+    padding-top: 2px;
+    padding-bottom: 2px;
+    padding-left: 7px;
+    padding-right: 7px;
+    font-weight: bold;
+    border-radius: 4px;
+    border: dotted 1px #00000092;
+}
+
+.button > img {
+    filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.542));
+    margin-right: 3px;
+}
+
+/* --> Text blocks: */
+li, p {
+    margin: 10px;
+    font-size: 1.3em;
+    color: var(--global-dark);
+}
+
+ul {
+    list-style: none;
+}
+
+ul li:before {
+    content: "»";
+    margin-right: 10px;
+    color: var(--global-clr4);
+}
+
+a > span:before {
+    content: "🔗";
+    margin-right: 2px;
+    font-size: 0.9em;
+}
+
+code {
+    color: var(--global-dark);
+    font-size: 1.2em;
+}
+
+/* --> Tables: */
+table, td, tr {
+    border-collapse: collapse;
+    border: solid 1px black;
+    padding: 15px;
+    color: var(--global-dark);
+    font-size: 1.05em;
+}
+
+table {
+    width: 100%;
+}
+
+.parameterName {
+    font-weight: bold;
+    font-family: 'Roboto Mono';
+    font-size: 1.1em;
+    white-space: nowrap;
+    text-align: center;
+}
+
+.icon {
+    width: 24px;
+    height: 24px;
+}
+
+.iconColumn {
+    width: 50px;
+    text-align: center;
+}
+
+.iconName {
+    width: 180px;
+    text-align: center;
+    font-family: "Roboto Mono";
+    font-size: 1.1em;
+}
+

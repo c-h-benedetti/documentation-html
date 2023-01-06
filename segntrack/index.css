@@ -1,0 +1,11 @@
+
+h1 {
+    background-image: url("../../medias/background-seg_n_track.png");
+    background-repeat: no-repeat;
+    background-size: cover;
+}
+
+#graph_opt {
+    max-width: 90%;
+    height: auto;
+}

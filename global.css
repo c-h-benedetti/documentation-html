@@ -1,0 +1,16 @@
+
+* {
+    font-family: "Roboto";
+}
+
+
+:root {
+    --global-dark: #363635;
+    --global-light: #eeeeee;
+    --global-clr1: #595a4a;
+    --global-clr2: #b0fe76;
+    --global-clr3: #81e979;
+    --global-clr4: #8fbb99;
+    --global-clr5: #363635;
+}
+

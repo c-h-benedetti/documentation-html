@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Yeasts Segmentation</title>
+        <meta charset="utf-8"/>
+        <link rel="stylesheet" href="./index.css"/>
+        <link rel="stylesheet" href="../global.css">
+        <link rel="stylesheet" href="../generalPage.css">
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto">
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:bold">
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto+Mono">
+
+    </head>
+    <body>
+
+        <!-- - - - - - - - - - - CHAPTER 1 - - - - - - - - - - - - - - -->
+        
+        <h1>Analysis of mother &amp; daughter yeasts</h1>
+        <div class="chapter">
+            <h2 id="chap1">Description of the problem</h2>
+            <p>
+                <b>Segmentation and analysis of mother and daughter yeasts.</b><br/>
+                The first channel can be used for the segmentation phase.<br/>
+                The second channel is stained in a way that reveals the presence of a protein in the membrane.<br/>
+            </p>
+            <h4>1. Links</h4>
+            <ul>
+                <li><a href="https://dev.mri.cnrs.fr/issues/1795">Page on Redmine</a></li>
+                <li><a href="https://github.com/MontpellierRessourcesImagerie/imagej_macros_and_scripts/tree/master/clement/macros/maxime-yeasts">GitHub repository</a></li>
+            </ul>
+
+            <h4>2. What about the project?</h4>
+            <ul>
+                <li>The goal is to analyse the intensity of the membrane of both the mother and the daughter.</li>
+                <li>The segmentation must be realized in the first channel. The extracted areas must be used in channel 2 to aggregate data.</li>
+                <li>The input is composed of an image on which the user will provide ROIs.</li>
+                <li>The first ROI is a polygon that will be used to extract the background.</li>
+                <li>The following ROIs are points ROIs (two points per ROI). A point in the mother, and another one in the daughter.</li>
+                <li>All measures have to be processed (mean, min, max, med, Q1 &amp; Q3) and extracted as a CSV.</li>
+            </ul>
+
+        </div>
+
+        <!-- - - - - - - - - - - CHAPTER 2 - - - - - - - - - - - - - - -->
+
+        <div class="chapter">
+            <h2 id="chap2">Example of results</h2>
+            
+            <div class="imgsRow">
+                <div class="imItem">
+                    <a class="imgEx" href="../../medias/demo/20220926-1106_NoAux_p003_seg.tif"><img alt="" src="../../medias/demo/20220926-1106_NoAux_p003_seg.gif"/></a>
+                    <span class="legend">Original segmentation channel</span>
+                </div>
+
+                <div class="imItem">
+                    <a class="imgEx" href="../../medias/demo/20220926-1106_NoAux_p003_cleanTracked.tif"><img alt="" src="../../medias/demo/20220926-1106_NoAux_p003_cleanTracked.gif"/></a>
+                    <span class="legend">Segmented and tracked nuclei</span>
+                </div>
+
+                <div class="imItem">
+                    <a class="imgEx" href="../../medias/demo/20220926-1106_NoAux_p003_stats.json"><img alt="" src="../../medias/demo/evolution.png"/></a>
+                    <span class="legend">Curves of median fluorescence</span>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- - - - - - - - - - - CHAPTER 3 - - - - - - - - - - - - - - -->
+
+        <div class="chapter">
+            <h2>What's new</h2>
+
+            <h6>📌 30 Dec. 2022</h6>
+            <ul>
+                <li>Fixed background processing method that was reading discarded cells</li>
+            </ul>
+
+            <h6>📦 27 Dec. 2022</h6>
+            <ul>
+                <li>Reduced preprocessing time.</li>
+                <li>Changed aggregateJSONs to use indices instead of letters in columns.</li>
+                <li>Modified aggregateJSONs to aggregate all the JSONs of a folder.</li>
+                <li>Removed extra space in CSV export.</li>
+                <li>Clarified documentation.</li>
+            </ul>
+
+            <h6>📦 26 Dec. 2022</h6>
+            <ul>
+                <li>Solved OS specifid bug</li>
+                <li>Modified default settings that where not optimal</li>
+            </ul>
+
+            <h6>🎉 23 Dec. 2022</h6>
+            <ul>
+                <li>Initial release</li>
+            </ul>
+        </div>
+
+        <!-- - CHAPTER: IMPLEMENTATION EXPLANATIONS - -->
+
+        <div class="chapter">
+            <h2>The process behind: Moving contours</h2>
+
+            <h4>I. Base</h4>
+
+            <h6>Structure</h6>
+            <h6>Increment &amp; tolerance</h6>
+
+            <h4>II. Curvature</h4>
+
+            <h6>Measurement</h6>
+            <h6>Interpretation</h6>
+
+            <h4>III. Collision &amp; intersection</h4>
+            <h6>Fusioned area</h6>
+
+            <h4>IV. Extraction of statistics</h4>
+            
+        </div>
+    </body>
+</html>

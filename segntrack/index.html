@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>SEG'N'TRACK</title>
+        <meta charset="utf-8"/>
+        <link rel="stylesheet" href="./index.css"/>
+        <link rel="stylesheet" href="../global.css">
+        <link rel="stylesheet" href="../generalPage.css">
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto">
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:bold">
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto+Mono">
+
+    </head>
+    <body>
+
+        <!-- - - - - - - - - - - CHAPTER 1 - - - - - - - - - - - - - - -->
+        
+        <h1>Segmentation &amp; tracking of nuclei</h1>
+        <div class="chapter">
+            <h2 id="chap1">Description of the problem</h2>
+            <p>
+                <b>Segmentation and tracking of nuclei over time to assess the evolution of their fluorescence.</b><br/>
+                The first channel shows the constant fluorescence of a marker, and can be used to segment the whole image.<br/>
+                The second channel was stained with auxin. This causes the fluorescence to evolve (decrease) over time, and it is the intensity of each nuclei in this channel that we want to track.<br/>
+                Acquisition is realized every 15 minutes, which implies that nuclei can have moved laterally, but also in depth.<br/>
+                Images contain many out-of-focus slices, which makes then unuable.
+            </p>
+            <h4>1. Links</h4>
+            <ul>
+                <li><a href="https://dev.mri.cnrs.fr/issues/1780">Page on Redmine</a></li>
+                <li><a href="https://github.com/MontpellierRessourcesImagerie/imagej_macros_and_scripts/tree/master/clement/macros/thomas-cell-segntrack/final">GitHub repository</a></li>
+                <li><a href="./extern/index.html">Python documentation</a></li>
+            </ul>
+
+            <h4>2. What about the project?</h4>
+            <ul>
+                <li>Track 3D cells in channel 1, and measure the mean intensity in channel 2.</li>
+                <li>Exclude dividing cells, the ones touching borders.</li>
+                <li>One image each 15 minutes.</li>
+                <li>4 time points without treatment (NoAux)</li>
+                <li>More timepoints with treatment (Auxin)</li>
+            </ul>
+            
+            <h4>3. Implementation notes</h4>
+            <ul>
+                <li>After some attemps, it was decided that all operations (segmentation and evaluation of fluorescence) can be done over a Z-projection (according to the maximum intensity instead of on the 3D image).</li>
+                <li>Only the mean intensity was asked, but some other statistics (such as Q1, Q3, median, min and max) have been implemented.</li>
+            </ul>
+
+            <h4>4. Required plugins</h4>
+            <ul>
+                <li><a href="https://imagescience.org/meijering/software/featurej/">FeatureJ</a></li>
+                <li><a href="https://imagej.net/plugins/morpholibj">MorphoLibJ</a></li>
+                <li><a href="https://imagej.net/plugins/labkit/">LabKit</a></li>
+                <li><a href="https://imagej.net/plugins/trackmate/">TrackMate</a></li>
+            </ul>
+        </div>
+
+        <!-- - - - - - - - - - - CHAPTER 2 - - - - - - - - - - - - - - -->
+
+        <div class="chapter">
+            <h2 id="chap2">Example of results</h2>
+            
+            <div class="imgsRow">
+                <div class="imItem">
+                    <a class="imgEx" href="../../medias/demo/20220926-1106_NoAux_p003_seg.tif"><img alt="" src="../../medias/demo/20220926-1106_NoAux_p003_seg.gif"/></a>
+                    <span class="legend">Original segmentation channel</span>
+                </div>
+
+                <div class="imItem">
+                    <a class="imgEx" href="../../medias/demo/20220926-1106_NoAux_p003_cleanTracked.tif"><img alt="" src="../../medias/demo/20220926-1106_NoAux_p003_cleanTracked.gif"/></a>
+                    <span class="legend">Segmented and tracked nuclei</span>
+                </div>
+
+                <div class="imItem">
+                    <a class="imgEx" href="../../medias/demo/20220926-1106_NoAux_p003_stats.json"><img alt="" src="../../medias/demo/evolution.png"/></a>
+                    <span class="legend">Curves of median fluorescence</span>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- - - - - - - - - - - CHAPTER 3 - - - - - - - - - - - - - - -->
+
+        <div class="chapter">
+            <h2>What's new</h2>
+
+            <h6>📌 30 Dec. 2022</h6>
+            <ul>
+                <li>Fixed background processing method that was reading discarded cells</li>
+            </ul>
+
+            <h6>📦 27 Dec. 2022</h6>
+            <ul>
+                <li>Reduced preprocessing time.</li>
+                <li>Changed aggregateJSONs to use indices instead of letters in columns.</li>
+                <li>Modified aggregateJSONs to aggregate all the JSONs of a folder.</li>
+                <li>Removed extra space in CSV export.</li>
+                <li>Clarified documentation.</li>
+            </ul>
+
+            <h6>📦 26 Dec. 2022</h6>
+            <ul>
+                <li>Solved OS specifid bug</li>
+                <li>Modified default settings that where not optimal</li>
+            </ul>
+
+            <h6>🎉 23 Dec. 2022</h6>
+            <ul>
+                <li>Initial release</li>
+            </ul>
+        </div>
+
+        <!-- - - - - - - - - - - CHAPTER 4 - - - - - - - - - - - - - - -->
+
+        <div class="chapter">
+            <h2>Walkthrough</h2>
+
+            <p>First, open your FeatureJ options and make sure they are identical to the following ones:</p>
+            <div class="centerImage">
+                <img alt="FeatureJ options" src="../../medias/screenshots/featurej.png"/>
+            </div>
+            <p>When you launch the plugin, the first window you see is the following:</p>
+            <div class="centerImage">
+                <img alt="Main window" src="../../medias/screenshots/dialogs/launcher.png"/>
+            </div>
+            <p>This window's purpose is to let you choose whether you want to apply the whole process in one shot to one or more images or use a single phase of the sequence (ex: just preprocess, just segment, just extract the statistics, ...).</p>
+            <p>If you need more precise explanations about using only one phase, check the <a href="#expphases">"Explanation of phases"</a> chapter. In the following lines, we will cover how to apply the entire procedure.</p>
+            <p>To do so, choose "Everything" in the list (the default value).</p>
+            <p>The "Show logs" checkbox determines whether you want the plugin to pass in verbose mode in the ImageJ's logs window. See an example of a typical log for one image:</p>
+            <div class="centerImage">
+                <img alt="Log one image" src="../../medias/screenshots/logging_full.png"/>
+            </div>
+            <p>It is highly recommended to always keep it checked, even in batch mode.</p>
+            <p>When you click the OK button, the following dialog should appear:</p>
+            <div class="centerImage">
+                <img alt="Main dialog" src="../../medias/screenshots/dialogs/settings_full_process.png"/>
+            </div>
+            <p>Find right below a description of the available options:</p>
+            <table>
+                <tr>
+                    <td class="parameterName">Tolerated size</td>
+                    <td>This is the minimal area in number of pixels that a label must reach before it was considered a cell and not residual noise.</td>
+                </tr>
+                <tr>
+                    <td class="parameterName">Export format</td>
+                    <td>What format should we use to export statistics when they are processed? You can choose either JSON or CSV. We recommend using JSON. The CSV is notably harder to parse in this case.</td>
+                </tr>
+                <tr>
+                    <td class="parameterName">Process entire folder</td>
+                    <td>Before reaching this window, you choose an image. Every ".tif" in the same folder as your selected image will also be processed if you check this box. It is batch mode.</td>
+                </tr>
+                <tr>
+                    <td class="parameterName">Export logs</td>
+                    <td>Your logs will be exported in a file as the execution go if you check this box. To locate these logs, read the <a href="#exports">Exports</a> chapter.</td>
+                </tr>
+                <tr>
+                    <td class="parameterName">Show logs</td>
+                    <td>Switch on or off the verbose mode of this plugin in the ImageJ's log window.</td>
+                </tr>
+            </table>
+            <p>
+                Note that default settings are meant to work; you can try to launch the execution without tweaking them.
+            </p>
+            <h4>Remarks</h4>
+            <ul>
+                <li>Some processing plugins in ImageJ need to open the image on which they will work in the GUI. Hence, during the execution, you will notice that several images will open and close immediately. Some windows may also flicker. Do not close those windows yourself. The process is over only when the log window indicates "DONE.", and no window is left open anymore.</li>
+                <li>This plugin exports various images along its execution (see <a href="#exports">Exports</a>). If you are unhappy with the final result you get, you can tweak one of these exported images and only relaunch one phase of the processing sequence (see <a href="#expphases">Explanation of phases</a>).</li>
+            </ul>
+            <p>You can go to the folder of your image once your log window indicates "DONE.". A new folder named "statistics" should have appeared; it contains multiple ".tif" (explained in <a href="#exports">Exports</a>). But, more importantly, your ".json" file named exactly like your input image at the difference of the extension.</p>
+            <p>One separate ".json" (or ".csv") file will be produced for each image. They will all be exported in the same "statistics" folder. This behavior doesn't change if you pass in batch mode.</p>
+        </div>
+
+        <!-- - - - - - - - - - - CHAPTER 5 - - - - - - - - - - - - - - -->
+
+        <div class="chapter">
+            <h2 id="expphases">Explanation of phases</h2>
+
+            <p>If you obtained unsatisfying results after the execution or want to try different settings without starting all over again, you can choose to execute only one phase.</p>
+            <p>You must pick something other than "Everything" in the first dialog. Here is a graph of the possibilities:</p>
+            <img id="graph_opt" alt="graph of menus" src="../../medias/screenshots/dialogs/dialogs_graph.png"/>
+            <p>The batch mode is only available if you want to launch the whole process, but it is subject to change.</p>
+            <p>Also, contrary to the "Everything" mode, you need to open the input images you want to use manually.</p>
+            <p>If you follow each paragraph of this chapter, you should achieve the same result as with the "Everything" mode.</p>
+            <p>You can <b>click</b> images to download the original.</p>
+            
+            <h4>1. Preprocess</h4>
+
+            <table>
+                <tr>
+                    <td class="parameterName">Target</td>
+                    <td>The image on which you want to apply the process. You must have opened it before. It is an image as they were provided for this project, without any operation applied earlier.</td>
+                </tr>
+            </table>
+
+            <p>This phase aims to produce a more easily segmentable image.</p>
+            <p>The input is a two-channeled image. The first channel will be used for the segmentation, while the second represents data. This image has several slices and an arbitrary number of frames.</p>
+            <p>If you already executed the plugin in "Everything" mode and go into the "statistics" folder, the image finishing in "_seg.tif" is the produced segmentation image. The "_data.tif" is the cleaned data channel.</p>
+
+            <br/>
+
+            <div class="imgsRow">
+                <div class="imItem">
+                    <a class="imgEx" href="../../medias/results/20220926-1106_NoAux_p017.tif"><img alt="" src="../../medias/screenshots/preprocess/input.png"/></a>
+                    <span class="legend">Input (original image)</span>
+                </div>
+
+                <div class="imItem">
+                    <a class="imgEx" href="../../medias/results/20220926-1106_NoAux_p017_seg.tif"><img alt="" src="../../medias/screenshots/preprocess/out_seg.png"/></a>
+                    <span class="legend">Segmentation channel</span>
+                </div>
+
+                <div class="imItem">
+                    <a class="imgEx" href="../../medias/results/20220926-1106_NoAux_p017_data.tif"><img alt="" src="../../medias/screenshots/preprocess/out_data.png"/></a>
+                    <span class="legend">Data channel</span>
+                </div>
+            </div>
+
+            <br/>
+
+            <p>Note: If you open the "_seg" image, you will notice that at first glance, it looks totally black. You can fix the display by doing: Shift+C and then "Reset" (without touching the sliders)</p>
+
+            <h4>2. Segmentation</h4>
+
+            <table>
+                <tr>
+                    <td class="parameterName">Target</td>
+                    <td>The image that you want to segment. You must have opened it before. This image is the "_seg" produced by the previous phase.</td>
+                </tr>
+                <tr>
+                    <td class="parameterName">Classifier</td>
+                    <td>Indicate the absolute path of the classifier.</td>
+                </tr>
+            </table>
+
+            <p>This phase mixes morphological filtering and random forests (LabKit) to produce a rough segmentation of the image.</p>
+            <p>If you already executed the plugin in "Everything" mode and go in the "statistics" folder, the image finishing in "_rawSeg.tif" is the one produced by this phase.</p>
+            <p>If you execute in step-by-step, nothing is exported automatically.</p>
+
+            <br/>
+
+            <div class="imgsRow">
+                <div class="imItem">
+                    <a class="imgEx" href="../../medias/results/20220926-1106_NoAux_p017_seg.tif"><img alt="" src="../../medias/screenshots/preprocess/out_seg.png"/></a>
+                    <span class="legend">Input (Segmentation channel)</span>
+                </div>
+
+                <div class="imItem">
+                    <a class="imgEx" href="../../medias/results/20220926-1106_NoAux_p017_rawseg.tif"><img alt="" src="../../medias/screenshots/labkit/rawseg.png"/></a>
+                    <span class="legend">Output (LabKit classification)</span>
+                </div>
+
+            </div>
+
+            <br/>
+
+            <h4>3. Postprocess (+ tracking)</h4>
+
+            <table>
+                <tr>
+                    <td class="parameterName">Target</td>
+                    <td>The image you want to segment. You must open it before. This image is the "_rawSeg" produced by the previous phase.</td>
+                </tr>
+                <tr>
+                    <td class="parameterName">Tolerated size</td>
+                    <td>Minimal area, in number of pixels, that a label must reach before being considered a cell.</td>
+                </tr>
+            </table>
+
+            <p>This phase combines two actions. It filters what LabKit produced, and launches the tracking over time on the result.</p>
+            <p>The output of this phase is a labeled image in which labels should be consistent over time for a same entity. This image still contains errors, they will be filtered in the next phase.</p>
+            <p>If you already executed the plugin in "Everything" mode and go in the "statistics" folder, the image finishing in "_rawTracked.tif" is the one produced by this phase.</p>
+
+            <br/>
+
+            <div class="imgsRow">
+
+                <div class="imItem">
+                    <a class="imgEx" href="../../medias/results/20220926-1106_NoAux_p017_rawseg.tif"><img alt="" src="../../medias/screenshots/labkit/rawseg.png"/></a>
+                    <span class="legend">Input (LabKit classification)</span>
+                </div>
+
+                <div class="imItem">
+                    <a class="imgEx" href="../../medias/results/20220926-1106_NoAux_p017_rawTracked.tif"><img alt="" src="../../medias/screenshots/segmentation/trackmate.png"/></a>
+                    <span class="legend">Output (Raw tracking)</span>
+                </div>
+
+            </div>
+
+            <br/>
+
+            <h4>4. Statistics</h4>
+
+            <table>
+                <tr>
+                    <td class="parameterName">Segmentation</td>
+                    <td>The segmented image produced by the previous step ("_rawTracked"). You must have opened it before.</td>
+                </tr>
+                <tr>
+                    <td class="parameterName">Data</td>
+                    <td>The data image produced by the first phase ("_data"). You must have opened it before.</td>
+                </tr>
+                <tr>
+                    <td class="parameterName">Format</td>
+                    <td>Format used to export the produced statistics. (JSON recommended)</td>
+                </tr>
+                <tr>
+                    <td class="parameterName">Export path</td>
+                    <td>This is the path of an existing DIRECTORY. The file's name will be automatically determined.</td>
+                </tr>
+            </table>
+
+            <p>This phase's main purpose is to build statistics about the data image according to the segmentation.</p>
+            <p>However, these stats also help spotting some segmentation mistakes; a cleaner tracking image should be produced.</p>
+            <p>For example, cells disappearing (even for a single frame) are ditched. Also, if a cell sees its size vary by over 25% from a frame to another, it is discarded.</p>
+            
+            <br/>
+
+            <div class="imgsRow">
+
+                <div class="imItem">
+                    <a class="imgEx" href="../../medias/results/20220926-1106_NoAux_p017_rawTracked.tif"><img alt="" src="../../medias/screenshots/segmentation/trackmate.png"/></a>
+                    <span class="legend">Input (Raw tracking)</span>
+                </div>
+
+                <div class="imItem">
+                    <a class="imgEx" href="../../medias/results/20220926-1106_NoAux_p017_data.tif"><img alt="" src="../../medias/screenshots/preprocess/out_data.png"/></a>
+                    <span class="legend">Input (Data channel)</span>
+                </div>
+
+                <div class="imItem">
+                    <a class="imgEx" href="../../medias/results/20220926-1106_NoAux_p017_cleanTracked.tif"><img alt="" src="../../medias/screenshots/stats/tracked.png"/></a>
+                    <span class="legend">Output (Cleaned tracking)</span>
+                </div>
+
+                <div class="imItem">
+                    <a class="imgEx" href="../../medias/results/20220926-1106_NoAux_p017_stats.json"><img alt="" src="../../medias/screenshots/stats/json.png"/></a>
+                    <span class="legend">Output (JSON/CSV file)</span>
+                </div>
+
+            </div>
+
+            <br/>
+
+            <p>If you already executed the plugin in "Everything" mode and go in the "statistics" folder, the image finishing in "_cleanTracked.tif" is the one produced by this phase.</p>
+            <p>Your JSON is also located here.</p>
+
+        </div>
+
+        <div class="chapter">
+            <h2 id="exports">Exports</h2>
+            <h4>What is exported</h4>
+            <p>For each image you pick and each step of the process, an image is being exported. It allows you to make tweaks without starting all over again.</p>
+            <p>Every document listed below is located in the "statistics" folder, which is in the same directory as your image</p>
+            <p><code>$(BASENAME)</code> is the name of your input image (without its extension).</p>
+
+            <table>
+                <tr>
+                    <td><code>$(BASENAME)_seg.tif</code></td>
+                    <td>This image is produced by the preprocessing phase. It was built by filtering the input, removing out-of-focus frames and applying a z-projection.</td>
+                </tr>
+                <tr>
+                    <td><code>$(BASENAME)_data.tif</code></td>
+                    <td>This image is produced by the preprocessing phase. It was built simply by applying a median filter to the data channel.</td>
+                </tr>
+                <tr>
+                    <td><code>$(BASENAME)_rawSeg.tif</code></td>
+                    <td>Image produced by the segmentation phase. It represents the guess of LabKit about the image's composition.</td>
+                </tr>
+                <tr>
+                    <td><code>$(BASENAME)_rawTracked.tif</code></td>
+                    <td>Image produced by the posprocessing phase. On the output of LabKit, we applied filtering and multiple transformations to remove everything that is not a cell. This image still contains errors because it is not time sensitive.
+                </tr>
+                <tr>
+                    <td><code>$(BASENAME)_cleanTracked.tif</code></td>
+                    <td>Image produced by the phase in which statistics are made. The statistics and the time are being used to remove errors.</td>
+                </tr>
+                <tr>
+                    <td><code>$(BASENAME)_stats.json</code></td>
+                    <td>Aggregated statistics for the current image over time.</td>
+                </tr>
+            </table>
+
+            <h4>Structure of a JSON</h4>
+
+            <ul>
+                <li>The root is a dictionary.</li>
+                <li>Each key of this dictionary is a string representing a number bigger or equal to 1. One of the keys is not a number but 'BG'. It represents the statistics over the background.</li>
+                <li>These keys point to a list of distionary. There are as many dictionaries in that list as there are frames in your file.</li>
+                <li>All cells have the same number of frames.</li>
+                <li>You can access one a frame by using an index of that list.</li>
+                <li>Inside one of the frame, you can access a stat by its name.</li>
+                <p>Example: Let's say that we want to see the fluorescence evolution of the median of the 14th detected cell.</p>
+                <pre><code>
+                    # varContainingJson is your JSON file loaded in Python
+                    framesOfCell14 = varContainingJson['14'] # String representing a number, not a number.
+
+                    for index, frame in enumerate(framesOfCell14):
+                        medianValue = frame[index]['med']
+                        print(f"At the frame {index}, the cell 14 had a median value of {medianValue}")
+                </code></pre>
+            </ul>
+
+            <h4>Structure of a CSV</h4>
+            <ul>
+                <li>Each column represents a cell (several columns can refer to same cell since several stats per cell are available)</li>
+                <li>The name of a column is composed of the name of the stat and the index of the cell.</li>
+                <li>Each row is a frame, except the first one that contains the labels.</li>
+            </ul>
+
+            <h4>How to aggregate JSONs</h4>
+            <p>The script <code>aggregateJSON.py</code> enables you to compile several JSONs into one CSV with only one stat.</p>
+            <p>Each columns name is composed of a number padded with zeros representing the file it comes from, and the index representing the label of this cell. The background follows the same notation logic but has "BG" instead of a cell index.</p>
+            <p>Each line is a frame.</p>
+            <p>Launch the script without any parameter to get the help. You can manually edit the <code>settings</code> dictionary if you don't want to deal with the command line.</p>
+            <p>Basically, the command has the form: <code>python3 aggregateJSON.py -json first/path/myjson.json other/path/tojson.json -output path/with/name/compiled.csv -stat med</code></p>
+            <p>The number of JSON passed to the list is arbitrary.</p>
+            <p>You can pass a directory instead of sparse JSONs to aggregate them all together.</p>
+            <p>Here is a <a href="../../medias/jsons.zip">pack of JSONs</a> if you want to try before processing several images:</p>
+        </div>
+
+        <div class="chapter">
+            <h2>Content of logs</h2>
+
+            <div class="centerImage">
+                <img alt="screen logs" src="../../medias/screenshots/logging_full.png"/>
+            </div>
+            <p>Just explaining not totally explicit lines</p>
+            <ul>
+                <li>6: Output of the function processing in-focus slices. The dict contains a 'start' and 'end' key being the first and last slices that can be used.</li>
+                <li>8: To avoid disturbing the classifier, segmentation images are normalized and equalized.</li>
+                <li>11: To separate touching cells, we generate a buffer class in LabKit that must be removed.</li>
+                <li>13-16: All labels not having enough pixels to be considered cells.</li>
+                <li>18: We only keep labels not cut by the border at any frame.</li>
+                <li>20-21: Removing labels if they are not on all frames, if they change of size erratically.</li>
+            </ul>
+        </div>
+
+        <div class="chapter">
+            <h2>The process behind</h2>
+
+            <h4>Steps</h4>
+
+            <ol>
+                <li>Split channels (it would be meaning less to apply the same operations to both channels).</li>
+                <li>Determine in-focus slices on the segmentation channels, and keep only those ones (data channel not affected).</li>
+                <li>Max-projection along the z-axis on both channels.</li>
+                <li>Normalizing and equalizing the segmentation channel.</li>
+                <li>Process a rough segmentation through Labkit</li>
+                <li>Get rid of labels to small to be nuclei.</li>
+                <li>Apply morphological operations to fix the extracted labels.</li>
+                <li>Get rid of labels that are still to small after the fixing phase.</li>
+                <li>Using trackmate to identify entities over time.</li>
+                <li>Removing labels missing of at least a frame and the ones touching borders.</li>
+                <li>Removing labels seeing their size vary by over 25% from one frame to the other.</li>
+            </ol>
+
+            <h4>Focus range detection</h4>
+
+            <p>By detecting the zero-crossings of a Laplacian, we can determine the in-focus range of slices for this particular image.
+            A zero-crossing represents the border of an object, whether we get in or out of this object. We can determine which slices correspond to the in-focus area by plotting intensity values along the Z-axis.</p>
+
+            <p>Procedure: LoG > Plot Z-axis > Export results > Python script</p>
+            <ul>
+                <li>The LoG must be applied with the "Detect zero crossings" option checked. It will result in a binary image: black=uniform areas, white=zero crossing.</li>
+            <li>Plotting along this axis gives the average value for each slice. Knowing that we have a binary image, gives the average presence of zero-crossings.</li>
+            <li>The problem is that it is not possible through a simple operator to export the values in a file for Python (the "save as" macro doesn't apply).</li>
+            <li>The Python script computes the derivative of the function represented by the previously acquired values, and locates the two maximums and the minimum (when the derivative changes of sign).</li>
+            </ul>
+
+            <p>On the graph right below, we can notice that the average intensity per slice always follow the same pattern: Two major peaks surround a very caracteristic valley.
+            The valley area corresponds to the in-focus area. Then, we have to carefully chose the accepted range, knowing that the peak slices must be excluded.</p>
+
+            <div class="centerImage">
+                <img alt="9 focus curves" src="../../medias/focus-curves.png"/>
+            </div>
+
+            <p>Plot along Z axis for 6 images</p> 
+            <ul>
+                <li>Green: X-axis</li>
+                <li>Blue: x = slice index | y = avg_intensity(x)</li>
+                <li>Orange: Derivative of blue function</li>
+            </ul>
+        </div>
+    </body>
+</html>
