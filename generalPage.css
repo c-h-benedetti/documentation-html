@@ -11,6 +11,7 @@ html, body {
 
 /* = = = = = = = = = = = = SECTIONS TITLES = = = = = = = = = = = = = = = = */
 
+/* Only used for the top-title of the page. */
 h1 {
     text-align: center;
     border-bottom: solid 40px var(--global-clr1);
@@ -23,6 +24,7 @@ h1 {
     background-size: cover;
 }
 
+/* Spans are used to make multiple lines in a same title */
 h1 > span {
     display: inline-block;
     font-weight: bolder;
@@ -76,10 +78,12 @@ h6 {
 
 .chapter {
     background-color: white;
-    margin: 20px;
+    margin: 25px;
+    margin-left: 100px;
+    margin-right: 100px;
     padding: 20px;
-    padding-top: 5px;
-    border-radius: 5px;
+    padding-top: 2px;
+    /* border-radius: 3px; */
     filter: drop-shadow(0 0.4rem 0.5rem rgba(0, 0, 0, 0.2));
     margin-bottom: 50px;
     color: var(--global-clr4);
@@ -141,6 +145,7 @@ a:hover {
 }
 
 /* --> Fiji button: */
+/* Class used to show icons as they are in the toolbar in ImageJ */
 .button {
     padding-top: 2px;
     padding-bottom: 2px;
@@ -152,7 +157,7 @@ a:hover {
 }
 
 .button > img {
-    filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.542));
+    /* filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.542)); */
     margin-right: 3px;
 }
 
@@ -183,6 +188,19 @@ code {
     color: var(--global-dark);
     font-size: 1.2em;
 }
+
+
+.softLabel {
+    background-color: var(--global-clr1);
+    font-family: monospace;
+    border-radius: 3px;
+    padding-left: 5px;
+    padding-right: 5px;
+    padding-top: 2px;
+    padding-bottom: 2px;
+    color: var(--global-light);
+}
+
 
 /* --> Tables: */
 table, td, tr {

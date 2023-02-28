@@ -15,7 +15,7 @@
 
         <!-- - - - - - - - - - - CHAPTER 1 - - - - - - - - - - - - - - -->
         
-        <h1>Analysis of mother &amp; daughter yeasts</h1>
+        <h1><span>Segmentation and analysis of </span><br/><span>mother &amp; daughter yeasts</span></h1>
         <div class="chapter">
             <h2 id="chap1">Description of the problem</h2>
             <p>
@@ -26,17 +26,25 @@
             <h4>1. Links</h4>
             <ul>
                 <li><a href="https://dev.mri.cnrs.fr/issues/1795">Page on Redmine</a></li>
-                <li><a href="https://github.com/MontpellierRessourcesImagerie/imagej_macros_and_scripts/tree/master/clement/macros/maxime-yeasts">GitHub repository</a></li>
+                <li><a href="https://github.com/MontpellierRessourcesImagerie/imagej_macros_and_scripts/tree/master/clement/macros/md-yeasts">GitHub repository</a></li>
             </ul>
 
             <h4>2. What about the project?</h4>
             <ul>
                 <li>The goal is to analyse the intensity of the membrane of both the mother and the daughter.</li>
-                <li>The segmentation must be realized in the first channel. The extracted areas must be used in channel 2 to aggregate data.</li>
+                <li>The segmentation can be realized in the first channel. The extracted areas must be used in channel 2 to aggregate data.</li>
                 <li>The input is composed of an image on which the user will provide ROIs.</li>
-                <li>The first ROI is a polygon that will be used to extract the background.</li>
-                <li>The following ROIs are points ROIs (two points per ROI). A point in the mother, and another one in the daughter.</li>
-                <li>All measures have to be processed (mean, min, max, med, Q1 &amp; Q3) and extracted as a CSV.</li>
+                <li>The provided ROIs are rectangles, a bit larger than the pair of cells.</li>
+                <li>All measures have to be processed (mean, standard deviation, min, max, median, Q1 &amp; Q3) and extracted as a CSV.</li>
+                <li>The transmission layer presents a light halo around each cell that must be skipped.</li>
+                <li>The fluo channel is not perfectly aligned on the transmission channel, and the shift is chaotic for each cell, even within a same image.</li>
+                <li>The user must have a way to visually check the correctness of the results.</li>
+            </ul>
+
+            <h4>3. Required plugins</h4>
+            <ul>
+                <li><a href="https://imagej.net/plugins/morpholibj"><span>MorphoLibJ</span></a></li>
+                <li><a href="https://imagej.net/libs/imagescience"><span>ImageScience</span></a></li>
             </ul>
 
         </div>
@@ -47,20 +55,17 @@
             <h2 id="chap2">Example of results</h2>
             
             <div class="imgsRow">
+
                 <div class="imItem">
-                    <a class="imgEx" href="../../medias/demo/20220926-1106_NoAux_p003_seg.tif"><img alt="" src="../../medias/demo/20220926-1106_NoAux_p003_seg.gif"/></a>
-                    <span class="legend">Original segmentation channel</span>
+                    <a class="imgEx" href="../../medias/yeasts/ori_01.tif"><img alt="" src="../../medias/yeasts/ori_01.png"/></a>
+                    <span class="legend">Original image</span>
                 </div>
 
                 <div class="imItem">
-                    <a class="imgEx" href="../../medias/demo/20220926-1106_NoAux_p003_cleanTracked.tif"><img alt="" src="../../medias/demo/20220926-1106_NoAux_p003_cleanTracked.gif"/></a>
-                    <span class="legend">Segmented and tracked nuclei</span>
+                    <a class="imgEx" href="../../medias/yeasts/ori_01-control.tif"><img alt="" src="../../medias/yeasts/ori_01-control.png"/></a>
+                    <span class="legend">Visual control image</span>
                 </div>
 
-                <div class="imItem">
-                    <a class="imgEx" href="../../medias/demo/20220926-1106_NoAux_p003_stats.json"><img alt="" src="../../medias/demo/evolution.png"/></a>
-                    <span class="legend">Curves of median fluorescence</span>
-                </div>
             </div>
 
         </div>
@@ -70,52 +75,557 @@
         <div class="chapter">
             <h2>What's new</h2>
 
-            <h6>📌 30 Dec. 2022</h6>
-            <ul>
-                <li>Fixed background processing method that was reading discarded cells</li>
-            </ul>
-
-            <h6>📦 27 Dec. 2022</h6>
-            <ul>
-                <li>Reduced preprocessing time.</li>
-                <li>Changed aggregateJSONs to use indices instead of letters in columns.</li>
-                <li>Modified aggregateJSONs to aggregate all the JSONs of a folder.</li>
-                <li>Removed extra space in CSV export.</li>
-                <li>Clarified documentation.</li>
-            </ul>
-
-            <h6>📦 26 Dec. 2022</h6>
-            <ul>
-                <li>Solved OS specifid bug</li>
-                <li>Modified default settings that where not optimal</li>
-            </ul>
-
-            <h6>🎉 23 Dec. 2022</h6>
+            <h6>🎉 09 Feb. 2023</h6>
             <ul>
                 <li>Initial release</li>
             </ul>
         </div>
 
+        <!-- - CHAPTER: USER GUIDE - -->
+
+        <div class="chapter">
+            <h2>Walkthrough</h2>
+
+            <h4>I. Prerequisites</h4>
+
+            <ul>
+                <li>Before starting, you must make sure that your Fiji is up to date. To verify that, click on <span class="softLabel">Help</span> (upper-right corner), and then on <span class="softLabel">Update...</span></li>
+                <li>Apply the updates (if some are to do) and restart your Fiji.</li>
+                <li>Once you restarted your Fiji, go back in <span class="softLabel">Help</span> > <span class="softLabel">Update...</span></li>
+                <li>In the newly opened window, click on <span class="softLabel">Manage update sites</span>.</li>
+                <li>In the list, search for two plugins named <span class="softLabel">IJPB-plugins</span> (containing MorphoLibJ) and <span class="softLabel">ImageScience</span> (containing FeatureJ).</li>
+                <li>Search for the command named <span class="softLabel">FeatureJ Options</span> (in the lower right search box). Once your options show up, you should tweak them to match these:</li>
+                <ul>
+                    <li>☑ Isotropic Gaussian</li>
+                    <li>☐ Close input images</li>
+                    <li>☐ Save result images</li>
+                    <li>☑ Progress indication</li>
+                    <li>☐ Log messaging</li>
+                </ul>
+            </ul>
+
+            <h4>II. Installation</h4>
+
+            <ul>
+                <li>Go on <a href="https://raw.githubusercontent.com/MontpellierRessourcesImagerie/imagej_macros_and_scripts/master/clement/macros/misc/install-mdyeasts.py"><span>GitHub</span></a> and copy the script from this page in your clipboard.</li>
+                <li>Open ImageJ. In the upper-left corner, go in <span class="softLabel">File</span> &gt; <span class="softLabel">New</span> &gt; <span class="softLabel">Text window</span>.</li>
+                <li>Paste the installation script. On the menu bar of the text window (upper area), go in the <span class="softLabel">Language</span> menu, and select <span class="softLabel">Python</span>.</li>
+                <li>Now, you can run the script, either by pressing [Ctrl] + [R], or by clicking on the <span class="softLabel">Run</span> button right below the text area.</li>
+                <li>The script will start downloading the different pieces of the script, and place them in your ImageJ directory.</li>
+                <li>Once your log window displays "DONE.", you can restart your ImageJ without saving the installation script.</li>
+            </ul>
+
+            <h4>III. Introduction</h4>
+
+            <h6>The toolbar</h6>
+
+            <p>Once installed, the "MD Yeasts" toolset is available in the <span class="button"><img src="../../medias/chevrons.png"/> More tools</span> menu of ImageJ.</p>
+
+            <table>
+                <tr>
+                    <td class="iconColumn"><img class="icon" src="../../medias/yeasts/icons/settings2.png"/></td>
+                    <td class="iconName">MD Options Tool</td>
+                    <td class="iconDescr">
+                        <p>
+                            Displays the settings for this set of tools.<br/>
+                            Settings are written to a file on the disk, hence they are conserved across the executions and across the sessions.<br/>
+                            See the next section for a detailed explanation of the available settings.
+                        </p>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="iconColumn"><img class="icon" src="../../medias/yeasts/icons/icon-maxime.png"/></td>
+                    <td class="iconName">MD Yeasts Tool</td>
+                    <td class="iconDescr">
+                        <p>
+                            Once an image was opened and your ROI manager was filled with rectangle ROIs, clicking on this icon will launch the segmentation and the analysis. <br/>
+                            A table will be produced representing the values extracted from the images. <br/>
+                            A new image will be generated to help you control the validity of the results.
+                        </p>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="iconColumn"><img class="icon" src="../../medias/yeasts/icons/exp-rois-v1.png"/></td>
+                    <td class="iconName">MD Export ROI Tool</td>
+                    <td class="iconDescr">
+                        <p>
+                            Allows you to export the current ROI manager in the current working directory so you can launch a batch later.
+                        </p>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="iconColumn"><img class="icon" src="../../medias/yeasts/icons/folder.png"/></td>
+                    <td class="iconName">MD Batch Tool</td>
+                    <td class="iconDescr">
+                        <p>
+                            Launches a batch from the available images and .zip files representing ROI managers. <br/>
+                            Each image must have its ROI manager properly named on the disk.
+                        </p>
+                    </td>
+                </tr>
+            </table>
+
+            <h6>Available settings</h6>
+
+            <p>
+                Default settings are supposed to be a good starting point for pretty much any project. You don't need to tweak the settings from the very begining to get your first results. <br/>
+                The only thing you should change is the working directory.
+            </p>
+
+            <table>
+                <tr>
+                    <td class="parameterName">Working directory</td>
+                    <td>
+                        <p>
+                            Path to an existing folder in which the plugin will export its data and store temporary files. <br/>
+                            This is not (necessarily) the folder in which you should place your images. <br/>
+                            Prefer providing the path of an empty folder that  you empty when you change of project, or of images set.
+                        </p>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td class="parameterName">Shape</td>
+                    <td>
+                        <p>
+                            A <a href="#mvngblock">moving n-gon</a> is used to segment the yeast cells. <br/>
+                            This parameter allows you to choose the default shape of the polygon, before it starts shrinking on your cells. <br/>
+                            <ul>
+                                <li>The "Box" is a polygon matching the rectangle ROI around your pair of cells.</li>
+                                <li>The "Ellipse" is the biggest ellipse that we can fit in the ROI you made around your pair of cells.</li>
+                            </ul>
+                        </p>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td class="parameterName">Tolerance</td>
+                    <td>
+                        <p>
+                            Maximal difference of intensities tolerated between two steps. <br/>
+                            If this value is exceeded, the point won't move anymore. <br/>
+                            For a mask, a difference of 1 is enough (since there are only two colors).
+                        </p>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td class="parameterName">Points</td>
+                    <td>
+                        <p>
+                            Number of points composing your moving n-gon. <br/>
+                            Up to a certain point, a higher number implies a higher precision. But passed this value, you reach a plateau. <br/>
+                            It implies that the computation time you lose processing all these points is not worth the minor precision you get.
+                        </p>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td class="parameterName">Step size</td>
+                    <td>
+                        <p>
+                            Distance traveled by a point of the moving n-gon at each iteration during its shrinking phase. <br/>
+                            This value is in fraction of pixel, not in µm. Hence, it highly depends on your image's resolution.
+                        </p>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td class="parameterName">Centroid from</td>
+                    <td>
+                        <p>
+                            This setting allows you to choose how will be determined the centroid of your polygon. <br/>
+                            The centroid determines the direction your vertices' normals are facing, which influences the direction points are moving towards. <br/>
+                            You are given two possibilities:
+                        </p>
+                            <ul>
+                                <li>"MASK": The center is the centroid of the white pixels of the theorical mask built in the preprocessing phase.</li>
+                                <li>"POINTS": The center is the average of all the points composing the polygon.</li>
+                            </ul>
+                        <p>
+                            Basically, the first one will always provide you with a tolerable centroid matching the potential shifting of the cells. <br/>
+                            The second one will always correspond to the center of the ROI you made around your pair of cells.
+                        </p>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td class="parameterName">Membrane thickness</td>
+                    <td>
+                        <p>
+                            The thickness of your membrane (in µm) as it is visible on the image.
+                        </p>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td class="parameterName">Show control</td>
+                    <td>
+                        <p>
+                            Should the control image pop-up by the end of the analysis.
+                        </p>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td class="parameterName">Export control</td>
+                    <td>
+                        <p>
+                            Should the visual control image be saved to your disk. <br/>
+                            If this option is checked, these images will be exported in a folder named "control", located in the working directory you provided.
+                        </p>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td class="parameterName">Close original</td>
+                    <td>
+                        <p>
+                            Should the original image get closed by the end of the analisys. <br/>
+                            This option is recommended if you plan to process several images in a row without using the batch mode.
+                        </p>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td class="parameterName">Close ROI Manager</td>
+                    <td>
+                        <p>
+                            Should the ROI manager get reseted and closed by the end of the execution. <br/>
+                            This option is recommended if you plan to process several images in a row without using the batch mode.
+                        </p>
+                    </td>
+                </tr>
+                
+            </table>
+
+            <h4>IV. Launch on an image</h4>
+
+            <p>If you want to follow these instructions, you can download the following items to get an identical tutorial.</p>
+            
+            <ul>
+                <li><a href="../../medias/yeasts/ori_01.tif"><span>Raw input image</span></a></li>
+                <li><a href="../../medias/yeasts/roi_01.zip"><span>ROI Manager</span></a></li>
+            </ul>
+
+            <p>
+                First, simply open ImageJ/Fiji and display the "MD Yeasts" toolset by clicking on "MD Yeasts" in the <span class="button"><img src="../../medias/chevrons.png"/> More tools</span> menu.
+            </p>
+
+            <p>
+                You can now drag'n'drop your raw image into ImageJ. It is composed of two channels. The first representing the transmission, and the second the fluorescence on the membranes. <br/>
+                Right after, drag'n'drop in ImageJ the .zip file representing an ROI manager filled for this image. <br/>
+                It contains rectangle selections, slightly wider than the bounding boxes of the yeast pairs.
+            </p>
+
+            <p>
+                Go in the <span class="button"><img src="../../medias/yeasts/icons/settings2.png"/>Settings</span>, and change your working directory. <br/>
+                You can leave other settings just as they are by default.
+            </p>
+
+            <p>
+                Press [OK] to validate your settings, and you can now launch the process for the image by clicking on the <span class="button"><img src="../../medias/yeasts/icons/icon-maxime.png"/>MD Yeasts</span> button.<br/>
+                Due to the usage of <i>FeatureJ</i> to apply a LoG filter to the image, you may observe some images flickering on your screen along the process. This is normal, and you don't have to close these images yourself.<br/>
+                By the end, depending of the settings you chose, the visual control image will show up.<br/>
+                A new window containing an ImageJ table will also appear, containing the results extracted from your image.
+            </p>
+
+            <div class="imgsRow">
+
+                <div class="imItem">
+                    <img style="width: 90%; height: auto;" alt="" src="../../medias/yeasts/result-screen.png"/>
+                    <span class="legend">Example of results table</span>
+                </div>
+
+            </div>
+
+            <p>
+                With this results, you can chain the analysis and they will all be added to that same table.<br/>
+                The only pixels taken into account in the statistics are the ones with some blue over them in the control image.<br/>
+                On the visual control image, the hexadecimal IDs that you see match the one present in each row of the table.<br/>
+                If you notice on the visual control image that some yeasts are not properly segmented (in blue) simply select the corresponding row in the table and press [del] <i>(fr: [suppr])</i>.<br/>
+                The transmission channel doesn't necessarily match exactly the fluorescence channel, to verify that the blue area caught the membrane, you can go on the fluo channel (2nd one), press [Shift]+[C] and play with the second slider to make the membrane show up.<br/>
+                Mother and daughter are automatically chosen according to their perimeter. All statistics about the mother start with "M_" and the daughter's ones with "D_".
+            </p>
+
+            <h4>V. Batching</h4>
+
+            <h6>Export ROIs</h6>
+
+            <p>
+                A batch session has to be prepared. Before being able to launch such an execution you need to build two collections:
+            </p>
+
+            <ul>
+                <li>A list of images to process</li>
+                <li>A list of ROI Manager (one per image)</li>
+            </ul>
+
+            <p>
+                The list of images is easy to create, you simply have to put all the .tif files you have in a folder, containing only these images.<br/>
+                To create the list of ROI managers, use the following procedure:
+            </p>
+
+            <ul>
+                <li>If you are on a new project or a new set of images, change of working directory or clear the current one.</li>
+                <li>Open an image</li>
+                <li>If you have an ROI manager already opened, clear it. Otherwise, you can skip this step.</li>
+                <li>For each pair of cells, make a rectangle selection, bigger than the minimal bounding box over these cells.</li>
+                <li>Press [T] to add this selection to the ROI manager.</li>
+                <li>Once you filled your ROI manager, you can press the <span class="button"><img src="../../medias/yeasts/icons/exp-rois-v1.png"/>Export ROI manager</span> button. Your current ROI manager will be exported in the working directory of this project.</li>
+                <li>Close your image, and pass to the next one.</li>
+            </ul>
+
+            <h6>Launch batching</h6>
+
+            <p>
+                Once you completed the steps above, you are ready to launch the batch.<br/>
+                Before launching it, beware that displaying the visual control image is automatically turned off in batch mode.<br/>
+                You will have to manually open them, from the "control" folder located in your working directory.<br/>
+            </p>
+            <p>
+                You can now click the <span class="button"><img src="../../medias/yeasts/icons/folder.png"/>Launch batch</span> button.
+            </p>
+            <p>
+                A new window will appear in which you will be asked the path of your yeasts, which is the path of the folder containing your images.<br/>
+                The second line is a reminder of where the ROIs will be fetched.<br/>
+                The last parameter is the extension of your images. You should provide it in lower case.
+            </p>
+            <p>
+                By clicking the [OK] button, the processcing will start.<br/>
+                The log window should open to keep you up to date about what is being processed.<br/>
+                The name of the current image is displayed.<br/>
+                If a pair of cells fails to be segmented, you will get the message <span class="softLabel">Roi 2 skipped (count starts from 0)</span>, meaning that the third ROI contained in the ROI manager for this image could not be process. (third not second because the count starts to 0, as specified). Of course, the example mentions "2" here but any index can fail to be segmented.
+                If some image of the folder doesn't have a ROI manager associated, you will get the message <span class="softLabel">/path/of/working/dir/rois/ori_09.zip not found (or empty) in ROIs folder</span>.
+                Here is an example of log window for an execution:
+            </p>
+
+            <div class="imgsRow">
+
+                <div class="imItem">
+                    <img alt="" src="../../medias/yeasts/log_batch.png"/>
+                    <span class="legend">Logs after batching</span>
+                </div>
+
+            </div>
+
+            <p>
+                Once your logs window display a line saying <span class="softLabel">DONE.</span> your execution is over, and you can access the results.
+            </p>
+
+        </div>
+
         <!-- - CHAPTER: IMPLEMENTATION EXPLANATIONS - -->
 
         <div class="chapter">
-            <h2>The process behind: Moving contours</h2>
+            <h2 id="mvngblock">The process behind: Moving N-gon</h2>
 
             <h4>I. Base</h4>
 
-            <h6>Structure</h6>
-            <h6>Increment &amp; tolerance</h6>
+            <p>
+                To implement this segmentation, we will use a structure called a moving n-gon.<br/>
+                An n-gon is simply a polygon without any specificity about its number of faces, angles, ...<br/>
+                The vertices of a moving n-gon are rays, which are structures owning both a position and a direction.<br/>
+                At each iteration, the rays of the n-gon will move along their direction vector and stop according to some criteria.<br/>
+                By the end, the contours of the polygon are supposed to match a structure present on our image. In this case, a pair of two yeast cells.
+            </p>
+
+            <p>
+                The polygon starts as an englobing shape such as a box or a ellipse.<br/>
+                We create a basic mask from our transmission channel, and we start by making our polygon shrinking on it.
+            </p>
+
+            <div class="imgsRow">
+
+                <div class="imItem">
+                    <img alt="" src="../../medias/yeasts/oriPair_01_00.png"/>
+                    <span class="legend">Original transmission channel</span>
+                </div>
+
+                <div class="imItem">
+                    <img alt="" src="../../medias/yeasts/segPair_01_00.png"/>
+                    <span class="legend">Basic mask</span>
+                </div>
+
+                <div class="imItem">
+                    <img alt="" src="../../medias/yeasts/rawSeg_01_00.png"/>
+                    <span class="legend">First shrink</span>
+                </div>
+
+            </div>
+
+
+            <p>
+                The result we get can be quite rough.<br/>
+                To be able to apply filters and measure things on this n-gons, we need them to be as denoised as possible, and their sampling should be as evenly spread as achievable.
+                The first phase will then consist in filtering the raw polygon generated from the first shrinking.
+                Procedure to get a cleaner polygon around the same area:
+            </p>
+            
+            <h6>Smoothing by projection</h6>
+
+            <p>
+                In order to get a clean smoothing taking into account every vertex sampled from the mask, we do a projection smoothing instead of an average smoothing.<br/>
+                For example, on the following diagram, the points B will be replaced by the point P after smoothing.<br/>
+                This smoothing technique has for advantage, compared to a smoothing by average, not to be influenced too much by high spikes or deep holes.
+            </p>
+
+            <div class="imgsRow">
+
+                <div class="imItem">
+                    <img alt="" src="../../medias/yeasts/projection.png"/>
+                    <span class="legend">Projection smoothing</span>
+                </div>
+
+            </div>
+
+            <h6>Removing vertices by distance</h6>
+
+            <p>
+                Some areas may be too much sampled, we can fix that by merging points too close from each other into a unique point.<br/>
+                Points with a big curvature are ignored through this process and cannot be deleted. See next chapter for explanations about curvature.
+            </p>
+
+            <h6>Adding interpolated vertices</h6>
+
+            <p>
+                Some areas are poorly sampled, however, we can't get along simply by adding new vertices in the middle of existing edges.<br/>
+                It would not bring any additional data, we would still have our long flat edge (but subdivided). We need a way to place out new vertices, considering the ones around.<br/>
+                The following diagram shows how the interpolation operation is realized.
+            </p>
+
+            <div class="imgsRow">
+
+                <div class="imItem">
+                    <img id="curv" alt="" src="../../medias/yeasts/interpolation.png"/>
+                    <span class="legend">Subdivision interpolation</span>
+                </div>
+
+            </div>
+
+            <p>
+                In our case, we would determine that the edge between the vertices B and C is too long, and represents a loss of precision.<br/>
+                Then, we would place several evenly spaced new vertices between B and C. For the clarity of the example, we will only place one vertex, which is I.<br/>
+                That new vertex I solves our length problem, but doesn't improve our precision condition in anyway. We are still left with a long flat edge. We could almost consider [BI][IC] as only one edge.<br/>
+                We need to interpolate the position of I to get it in a plausible location.
+            </p>
+
+            <p>
+                We achieve that by making circles passing by 3 points of the neighborhood.<br/>
+                <i>Reminder:</i> For 3 points in space, there exists a unique circle passing by these points.<br/>
+                We choose our first circle as being the one passing by A, B and C. The second one will pass through B, C and D.<br/>
+            </p>
+            <p>
+                We want to place our point in a way that minimizes its curvature, and the curvature at its neighbors. In other words, we want a point that minimizes the curvatures at points B, I and C.<br/>
+                The definitive point will be a projection of itself along its normal, on the circle.<br/>
+                Considering these two last informations, we can discard the circle with the smaller radius, that would imply a higher curvature.<br/>
+                We finally obtain the point J, projection of I through its own normal on the circle of highest radius.
+            </p>
+
+            <p>
+                The next pictures show the difference between a polygon as we get it simply after shrinking around the mask, and the same polygon after it was filtered.
+            </p>
+
+            <div class="imgsRow">
+
+                <div class="imItem">
+                    <img alt="" src="../../medias/yeasts/rawSeg_02_01.png"/>
+                    <span class="legend">Raw polygon</span>
+                </div>
+
+                <div class="imItem">
+                    <img alt="" src="../../medias/yeasts/processed_02_01.png"/>
+                    <span class="legend">Filtered polygon</span>
+                </div>
+
+            </div>
 
             <h4>II. Curvature</h4>
 
-            <h6>Measurement</h6>
-            <h6>Interpretation</h6>
+            <p>
+                The curvature is a value in the range [-1.0, 1.0] representing how a curve bends at a certain point.<br/>
+                The sign gives a representation of the direction in which the curve is bending.<br/>
+                Watch the following animation to see how the value of curvature evolves.
+            </p>
 
-            <h4>III. Collision &amp; intersection</h4>
-            <h6>Fusioned area</h6>
+            <div class="imgsRow">
 
-            <h4>IV. Extraction of statistics</h4>
+                <div class="imItem">
+                    <img id="curv" alt="" src="../../medias/yeasts/anim-curvature.gif"/>
+                    <span class="legend">Curvature</span>
+                </div>
+
+            </div>
+
+            <p>
+                For this application, the value of curvature can be used for both:
+                <ul>
+                    <li><b>Detect errors:</b> Effectively, we expect a lot of positive values of curvature. These values shouldn't be higher than 0.5 either. We also expect two pretty big values of negative curvatures, matching the transition from one cell to the other.</li>
+                    <li><b>Split cells:</b> Since we know that the two lowest negative values of curvature will be the splitting area of the cells, we can use this information to split our polygon there.</li>
+                </ul>
+            </p>
+
+            <p>
+                On the previous diagram showing the filtered polygon, the color of each vertex follows the coloring rule used in the animation explaining what curvature is.<br/>
+                We quickly notice that the two red points effectively mark the transition.
+            </p>
+
+            <h4>III. Extraction of statistics</h4>
+
+            <p>
+                Once the  cells are splitted, we have to skip the light halo.<br/>
+                We can do it by making the vertices go along their normals, but we will make them stop if one of these two conditions is fulfilled:
+                <ul>
+                    <li>The vertex passed (or started) in a white area and is now in a black area.</li>
+                    <li>85% of the vertices composing the polygon have stopped already.</li>
+                </ul>
+            </p>
+            <p>
+                The second condition ensures that the vertices at the splitting points won't keep progressing until meeting each other.<br/>
+                The following image show:
+                <ul>
+                    <li><b>In orange:</b> The first halve of the after-split polygon before skipping the halo.</li>
+                    <li><b>In blue:</b> The second halve of the after-split polygon before skipping the halo.</li>
+                    <li><b>In green:</b> The polygon matching the membrane of the first cell, after splitting interpolation of the border and halo-skipping.</li>
+                    <li><b>In red:</b> The polygon matching the membrane of the second cell, after splitting interpolation of the border and halo-skipping.</li>
+                </ul>
+            </p>
+
+            <div class="imgsRow">
+
+                <div class="imItem">
+                    <img alt="" src="../../medias/yeasts/joined_01_00.png"/>
+                    <span class="legend">Before extraction</span>
+                </div>
+
+            </div>
+
+            <p>
+                The last steps of this process simply consist in:
+                <ol>
+                    <li>Taking the red and green polygons, collecting pixel values in the area they cover. (let's call them S1)</li>
+                    <li>Shrinking them according to the membrane thickness provided by the user in the settings.</li>
+                    <li>Collect pixel values in those shrunk versions (let's call these S2)</li>
+                    <li>Subtract S2 from S1, and build statistics over the values conserved by this difference.</li>
+                </ol>
+            </p>
+
+            <p>
+                <b>Note:</b> A rolling sum was applied to find the location of the membrane on the fluo channel, since there is a chaotic shift between what we have on the transmission channel, and what shows up on the fluorescence channel.<br/>
+                Many testing images have been used, and that shift is not proper to a category of individual (mother or daughter), is chaotic (present on random individuals across a same image) and is not a lens problem (otherwise, individuals in the center would be perfect).<br/>
+                On the example below, the membrane matches the transmission in the lower cell, but in the upper one, the fluo is very far from the transmission.
+            </p>
+
+            <div class="imgsRow">
+
+                <div class="imItem">
+                    <img alt="" src="../../medias/yeasts/missaligned.png"/>
+                    <span class="legend">Missaligned transmission/fluo</span>
+                </div>
+
+            </div>
             
         </div>
+
     </body>
 </html>
