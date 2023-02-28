@@ -1,16 +1,17 @@
 
+@import url('https://fonts.googleapis.com/css2?family=Gloock&family=Oswald:wght@200&family=Roboto+Mono:wght@300;400&display=swap');
+
 * {
-    font-family: "Roboto";
+    font-family: "Oswald";
 }
 
 
 :root {
     --global-dark: #363635;
-    --global-light: #eeeeee;
-    --global-clr1: #595a4a;
-    --global-clr2: #b0fe76;
-    --global-clr3: #81e979;
-    --global-clr4: #8fbb99;
+    --global-light: #EEEEEE;
+    --global-clr1: #868B8E;
+    --global-clr2: #EEEDE7;
+    --global-clr3: #B9B7BD;
+    --global-clr4: #E7D2CC;
     --global-clr5: #363635;
 }
-

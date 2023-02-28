@@ -1,36 +1,23 @@
 
-
-h2 {
-    color: var(--global-dark);
-    font-size: 2.4em;
-    width: 100%;
-    border-bottom: solid 1px #1b1b1b2a;
-    padding: 15px;
-    margin-top: 15px;
-    margin-bottom: 55px;
-}
-
-html {
+html, body {
     margin: 0;
     padding: 0;
     min-height: 100%;
     width: 100%;
-    background: linear-gradient(180deg, var(--global-clr1) 0%, var(--global-clr2) 100%);
+    background: var(--global-light);
+}
+
+h2 {
+    border-bottom: solid 1px #1b1b1b2a;
+    color: var(--global-dark);
+    font-size: 3em;
+    padding: 15px;
+    padding-left: 70px;
+    margin-top: 0px;
 }
 
 #cnrs {
     color: var(--global-clr3);
-}
-
-#perso {
-    color: var(--global-clr4);
-}
-
-body {
-    margin: 0;
-    padding: 0;
-    min-height: 100%;
-    width: 100%;
 }
 
 #flexcontainer {
@@ -46,20 +33,18 @@ body {
 }
 
 .content {
-    background-color: var(--global-light);
+    background-color: white;
     padding: 75px;
     padding-top: 15px;
-    border-radius: 5px;
-    filter: none;
     transition-duration: 0.25s;
-    width: 750px;
+    width: 850px;
     margin: 20px;
 }
 
 .content:hover {
-    filter: drop-shadow(0 0.43rem 0.43rem rgb(0, 0, 0, 0.35));
+    filter: drop-shadow(0 0.43rem 0.43rem rgb(0, 0, 0, 0.05));
     transition-duration: 0.25s;
-    transform: translateY(-5px);
+    transform: translateY(-3px);
 }
 
 a, a:visited {
@@ -67,12 +52,12 @@ a, a:visited {
     text-decoration: none;
     font-size: 1.4em;
     border-bottom: solid 3px #00000000;
-    transition-duration: 0.3s;
+    transition-duration: 0.5s;
 }
 
 a:hover {
     border-bottom: solid 3px var(--global-clr3);
-    transition-duration: 0.3s;
+    transition-duration: 0.5s;
 }
 
 li {
@@ -80,9 +65,16 @@ li {
     font-size: 1.1em;
 }
 
+li:before {
+    content: "📌";
+    margin-right: 7px;
+    font-size: 1.2em;
+}
+
 ul {
     margin: 40px;
     margin-left: 10px;
     margin-bottom: 10px;
     padding: 0px;
+    list-style-type: none;
 }

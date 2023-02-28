@@ -20,8 +20,8 @@
             <h2 id="chap1">Description of the problem</h2>
             <p>
                 <b>Segmentation and analysis of mother and daughter yeasts.</b><br/>
-                The first channel can be used for the segmentation phase.<br/>
-                The second channel is stained in a way that reveals the presence of a protein in the membrane.<br/>
+                The segmentation phase will use the first channel corresponding to the transmission.<br/>
+                The staining reveals a specific protein's presence in the cells' membrane in the second channel.<br/>
             </p>
             <h4>1. Links</h4>
             <ul>
@@ -31,13 +31,13 @@
 
             <h4>2. What about the project?</h4>
             <ul>
-                <li>The goal is to analyse the intensity of the membrane of both the mother and the daughter.</li>
-                <li>The segmentation can be realized in the first channel. The extracted areas must be used in channel 2 to aggregate data.</li>
+                <li>The goal is to analyze the intensity in the membrane of both the mother and the daughter.</li>
+                <li>We will build statistics over values taken in the second channel, but we need the first channel to segment the mother from the daughter.</li>
                 <li>The input is composed of an image on which the user will provide ROIs.</li>
-                <li>The provided ROIs are rectangles, a bit larger than the pair of cells.</li>
+                <li>ROIs are rectangles, a bit wider than the pair of cells.</li>
                 <li>All measures have to be processed (mean, standard deviation, min, max, median, Q1 &amp; Q3) and extracted as a CSV.</li>
                 <li>The transmission layer presents a light halo around each cell that must be skipped.</li>
-                <li>The fluo channel is not perfectly aligned on the transmission channel, and the shift is chaotic for each cell, even within a same image.</li>
+                <li>The fluo channel is not perfectly aligned on the transmission channel, and the shift is chaotic for each cell. Even within a same image.</li>
                 <li>The user must have a way to visually check the correctness of the results.</li>
             </ul>
 
@@ -90,11 +90,11 @@
 
             <ul>
                 <li>Before starting, you must make sure that your Fiji is up to date. To verify that, click on <span class="softLabel">Help</span> (upper-right corner), and then on <span class="softLabel">Update...</span></li>
-                <li>Apply the updates (if some are to do) and restart your Fiji.</li>
+                <li>Apply the updates (if some are pending) and restart your Fiji.</li>
                 <li>Once you restarted your Fiji, go back in <span class="softLabel">Help</span> > <span class="softLabel">Update...</span></li>
                 <li>In the newly opened window, click on <span class="softLabel">Manage update sites</span>.</li>
                 <li>In the list, search for two plugins named <span class="softLabel">IJPB-plugins</span> (containing MorphoLibJ) and <span class="softLabel">ImageScience</span> (containing FeatureJ).</li>
-                <li>Search for the command named <span class="softLabel">FeatureJ Options</span> (in the lower right search box). Once your options show up, you should tweak them to match these:</li>
+                <li>Search for the command named <span class="softLabel">FeatureJ Options</span> (in the lower right search box). Once your options show up, you should make them match these:</li>
                 <ul>
                     <li>☑ Isotropic Gaussian</li>
                     <li>☐ Close input images</li>
@@ -128,7 +128,7 @@
                     <td class="iconDescr">
                         <p>
                             Displays the settings for this set of tools.<br/>
-                            Settings are written to a file on the disk, hence they are conserved across the executions and across the sessions.<br/>
+                            Settings are written to a file on the disk, hence they are conserved across the executions and sessions.<br/>
                             See the next section for a detailed explanation of the available settings.
                         </p>
                     </td>
@@ -139,7 +139,7 @@
                     <td class="iconDescr">
                         <p>
                             Once an image was opened and your ROI manager was filled with rectangle ROIs, clicking on this icon will launch the segmentation and the analysis. <br/>
-                            A table will be produced representing the values extracted from the images. <br/>
+                            A table will be produced, representing the values extracted from the images. <br/>
                             A new image will be generated to help you control the validity of the results.
                         </p>
                     </td>
@@ -168,7 +168,7 @@
             <h6>Available settings</h6>
 
             <p>
-                Default settings are supposed to be a good starting point for pretty much any project. You don't need to tweak the settings from the very begining to get your first results. <br/>
+                Default settings are supposed to be a good starting point for pretty much any project. You don't need to tweak the settings when you start to get your first results. <br/>
                 The only thing you should change is the working directory.
             </p>
 
@@ -179,7 +179,7 @@
                         <p>
                             Path to an existing folder in which the plugin will export its data and store temporary files. <br/>
                             This is not (necessarily) the folder in which you should place your images. <br/>
-                            Prefer providing the path of an empty folder that  you empty when you change of project, or of images set.
+                            Prefer providing the path of an empty folder that  you empty when you change of project.
                         </p>
                     </td>
                 </tr>
@@ -204,7 +204,7 @@
                         <p>
                             Maximal difference of intensities tolerated between two steps. <br/>
                             If this value is exceeded, the point won't move anymore. <br/>
-                            For a mask, a difference of 1 is enough (since there are only two colors).
+                            For a mask, a difference of 1 is enough (since there are only two intensities).
                         </p>
                     </td>
                 </tr>
@@ -214,8 +214,8 @@
                     <td>
                         <p>
                             Number of points composing your moving n-gon. <br/>
-                            Up to a certain point, a higher number implies a higher precision. But passed this value, you reach a plateau. <br/>
-                            It implies that the computation time you lose processing all these points is not worth the minor precision you get.
+                            Up to a certain count, more points implies a higher precision. But passed this value, you reach a plateau. <br/>
+                            It makes the computation time you lose processing all these points not worth the minor precision you get.
                         </p>
                     </td>
                 </tr>
@@ -234,12 +234,12 @@
                     <td class="parameterName">Centroid from</td>
                     <td>
                         <p>
-                            This setting allows you to choose how will be determined the centroid of your polygon. <br/>
-                            The centroid determines the direction your vertices' normals are facing, which influences the direction points are moving towards. <br/>
+                            This setting allows you to choose how the centroid of your polygon will be determined. <br/>
+                            The centroid determines the direction your vertices' normals are facing, which influences the direction they are moving towards. <br/>
                             You are given two possibilities:
                         </p>
                             <ul>
-                                <li>"MASK": The center is the centroid of the white pixels of the theorical mask built in the preprocessing phase.</li>
+                                <li>"MASK": The center is the centroid of the white pixels from the theorical mask built in the preprocessing phase.</li>
                                 <li>"POINTS": The center is the average of all the points composing the polygon.</li>
                             </ul>
                         <p>
@@ -325,7 +325,7 @@
 
             <p>
                 Press [OK] to validate your settings, and you can now launch the process for the image by clicking on the <span class="button"><img src="../../medias/yeasts/icons/icon-maxime.png"/>MD Yeasts</span> button.<br/>
-                Due to the usage of <i>FeatureJ</i> to apply a LoG filter to the image, you may observe some images flickering on your screen along the process. This is normal, and you don't have to close these images yourself.<br/>
+                Due to the usage of <i>FeatureJ</i> for its LoG filter, you may observe some images flickering on your screen along the process. This is normal, and you shouldn't close these images yourself.<br/>
                 By the end, depending of the settings you chose, the visual control image will show up.<br/>
                 A new window containing an ImageJ table will also appear, containing the results extracted from your image.
             </p>
@@ -340,9 +340,9 @@
             </div>
 
             <p>
-                With this results, you can chain the analysis and they will all be added to that same table.<br/>
+                With this table, you can chain analysis and results will all be added to that same table.<br/>
                 The only pixels taken into account in the statistics are the ones with some blue over them in the control image.<br/>
-                On the visual control image, the hexadecimal IDs that you see match the one present in each row of the table.<br/>
+                On the visual control image, the hexadecimal IDs that you see match the ones present in each row of the table.<br/>
                 If you notice on the visual control image that some yeasts are not properly segmented (in blue) simply select the corresponding row in the table and press [del] <i>(fr: [suppr])</i>.<br/>
                 The transmission channel doesn't necessarily match exactly the fluorescence channel, to verify that the blue area caught the membrane, you can go on the fluo channel (2nd one), press [Shift]+[C] and play with the second slider to make the membrane show up.<br/>
                 Mother and daughter are automatically chosen according to their perimeter. All statistics about the mother start with "M_" and the daughter's ones with "D_".
@@ -380,7 +380,7 @@
 
             <p>
                 Once you completed the steps above, you are ready to launch the batch.<br/>
-                Before launching it, beware that displaying the visual control image is automatically turned off in batch mode.<br/>
+                Before launching it, beware that displaying the visual control image is automatically disabled in batch mode.<br/>
                 You will have to manually open them, from the "control" folder located in your working directory.<br/>
             </p>
             <p>
@@ -389,11 +389,11 @@
             <p>
                 A new window will appear in which you will be asked the path of your yeasts, which is the path of the folder containing your images.<br/>
                 The second line is a reminder of where the ROIs will be fetched.<br/>
-                The last parameter is the extension of your images. You should provide it in lower case.
+                The last parameter is the extension of your images. You should provide it in lower case (".tif" instead of ".TIF").
             </p>
             <p>
-                By clicking the [OK] button, the processcing will start.<br/>
-                The log window should open to keep you up to date about what is being processed.<br/>
+                By clicking the [OK] button, the process will start.<br/>
+                The log window should open to keep you informed about what is being processed.<br/>
                 The name of the current image is displayed.<br/>
                 If a pair of cells fails to be segmented, you will get the message <span class="softLabel">Roi 2 skipped (count starts from 0)</span>, meaning that the third ROI contained in the ROI manager for this image could not be process. (third not second because the count starts to 0, as specified). Of course, the example mentions "2" here but any index can fail to be segmented.
                 If some image of the folder doesn't have a ROI manager associated, you will get the message <span class="softLabel">/path/of/working/dir/rois/ori_09.zip not found (or empty) in ROIs folder</span>.
@@ -410,7 +410,7 @@
             </div>
 
             <p>
-                Once your logs window display a line saying <span class="softLabel">DONE.</span> your execution is over, and you can access the results.
+                Once your logs window displays a line saying <span class="softLabel">DONE.</span> your execution is over, and you can access the results.
             </p>
 
         </div>
@@ -423,7 +423,7 @@
             <h4>I. Base</h4>
 
             <p>
-                To implement this segmentation, we will use a structure called a moving n-gon.<br/>
+                To implement this segmentation, we used a structure called a moving n-gon.<br/>
                 An n-gon is simply a polygon without any specificity about its number of faces, angles, ...<br/>
                 The vertices of a moving n-gon are rays, which are structures owning both a position and a direction.<br/>
                 At each iteration, the rays of the n-gon will move along their direction vector and stop according to some criteria.<br/>
@@ -465,8 +465,8 @@
             <h6>Smoothing by projection</h6>
 
             <p>
-                In order to get a clean smoothing taking into account every vertex sampled from the mask, we do a projection smoothing instead of an average smoothing.<br/>
-                For example, on the following diagram, the points B will be replaced by the point P after smoothing.<br/>
+                In order to get a clean smoothing taking into account every vertex sampled from the mask, we apply a projection smoothing instead of an average smoothing.<br/>
+                For example, on the following diagram, the point B will be replaced by the point P after smoothing.<br/>
                 This smoothing technique has for advantage, compared to a smoothing by average, not to be influenced too much by high spikes or deep holes.
             </p>
 
@@ -504,9 +504,9 @@
             </div>
 
             <p>
-                In our case, we would determine that the edge between the vertices B and C is too long, and represents a loss of precision.<br/>
+                In our case, we would declare that the edge between the vertices B and C is too long, and represents a loss of precision.<br/>
                 Then, we would place several evenly spaced new vertices between B and C. For the clarity of the example, we will only place one vertex, which is I.<br/>
-                That new vertex I solves our length problem, but doesn't improve our precision condition in anyway. We are still left with a long flat edge. We could almost consider [BI][IC] as only one edge.<br/>
+                That new vertex I solves our length problem, but doesn't address our precision condition in any manner. We are still left with a long flat edge. We could almost consider BC as only one edge.<br/>
                 We need to interpolate the position of I to get it in a plausible location.
             </p>
 
@@ -516,14 +516,14 @@
                 We choose our first circle as being the one passing by A, B and C. The second one will pass through B, C and D.<br/>
             </p>
             <p>
-                We want to place our point in a way that minimizes its curvature, and the curvature at its neighbors. In other words, we want a point that minimizes the curvatures at points B, I and C.<br/>
+                We want to place our point in a way that minimizes its curvature, and the curvature at its neighbors. In other terms, we want a point that minimizes the curvatures at points B, I and C.<br/>
                 The definitive point will be a projection of itself along its normal, on the circle.<br/>
                 Considering these two last informations, we can discard the circle with the smaller radius, that would imply a higher curvature.<br/>
                 We finally obtain the point J, projection of I through its own normal on the circle of highest radius.
             </p>
 
             <p>
-                The next pictures show the difference between a polygon as we get it simply after shrinking around the mask, and the same polygon after it was filtered.
+                The next pictures show the differences between a polygon as we get it simply after shrinking around the mask, and the same polygon after it was filtered.
             </p>
 
             <div class="imgsRow">
@@ -544,7 +544,7 @@
 
             <p>
                 The curvature is a value in the range [-1.0, 1.0] representing how a curve bends at a certain point.<br/>
-                The sign gives a representation of the direction in which the curve is bending.<br/>
+                The sign represents the direction in which the curve is bending.<br/>
                 Watch the following animation to see how the value of curvature evolves.
             </p>
 
@@ -560,7 +560,7 @@
             <p>
                 For this application, the value of curvature can be used for both:
                 <ul>
-                    <li><b>Detect errors:</b> Effectively, we expect a lot of positive values of curvature. These values shouldn't be higher than 0.5 either. We also expect two pretty big values of negative curvatures, matching the transition from one cell to the other.</li>
+                    <li><b>Detect errors:</b> We expect a lot of positive values of curvature. These values shouldn't be higher than 0.5 either. We also expect two pretty big values of negative curvatures, matching the transition from one cell to the other.</li>
                     <li><b>Split cells:</b> Since we know that the two lowest negative values of curvature will be the splitting area of the cells, we can use this information to split our polygon there.</li>
                 </ul>
             </p>
@@ -577,15 +577,15 @@
                 We can do it by making the vertices go along their normals, but we will make them stop if one of these two conditions is fulfilled:
                 <ul>
                     <li>The vertex passed (or started) in a white area and is now in a black area.</li>
-                    <li>85% of the vertices composing the polygon have stopped already.</li>
+                    <li>85% of the vertices composing the polygon have already stopped.</li>
                 </ul>
             </p>
             <p>
                 The second condition ensures that the vertices at the splitting points won't keep progressing until meeting each other.<br/>
-                The following image show:
+                The following image shows:
                 <ul>
-                    <li><b>In orange:</b> The first halve of the after-split polygon before skipping the halo.</li>
-                    <li><b>In blue:</b> The second halve of the after-split polygon before skipping the halo.</li>
+                    <li><b>In orange:</b> The first half of the after-split polygon before skipping the halo.</li>
+                    <li><b>In blue:</b> The second half of the after-split polygon before skipping the halo.</li>
                     <li><b>In green:</b> The polygon matching the membrane of the first cell, after splitting interpolation of the border and halo-skipping.</li>
                     <li><b>In red:</b> The polygon matching the membrane of the second cell, after splitting interpolation of the border and halo-skipping.</li>
                 </ul>
